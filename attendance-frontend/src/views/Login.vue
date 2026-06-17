@@ -61,11 +61,11 @@ const handleLogin = async () => {
 
   loading.value = true
   try {
-    await userStore.login(form)
+    const res = await userStore.login(form)
     ElMessage.success('登录成功')
     router.push('/')
   } catch (e) {
-    // Error already handled by interceptor
+    ElMessage.error(e?.message || '登录失败')
   } finally {
     loading.value = false
   }

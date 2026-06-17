@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { getToken, setUser, getUser, removeToken, removeUser } from '@/utils/auth'
+import { getToken, setToken, setUser, getUser, removeToken, removeUser } from '@/utils/auth'
 import { login as loginApi, logout as logoutApi, getProfile } from '@/api/auth'
 
 export const useUserStore = defineStore('user', () => {
@@ -14,9 +14,9 @@ export const useUserStore = defineStore('user', () => {
   async function login(loginForm) {
     const result = await loginApi(loginForm)
     token.value = result.data.token
+    setToken(result.data.token)
     user.value = result.data.user
     setUser(result.data.user)
-    // Parse roles
     if (result.data.user.role === 'ROLE_ADMIN') {
       roles.value = ['ADMIN']
     } else {
