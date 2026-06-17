@@ -67,7 +67,7 @@ public class JwtTokenProvider {
 
     public boolean validateToken(String token) {
         try {
-            if (redisTemplate.hasKey("jwt:blacklist:" + token)) {
+            if (redisTemplate != null && redisTemplate.hasKey("jwt:blacklist:" + token)) {
                 return false;
             }
             Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
@@ -81,6 +81,9 @@ public class JwtTokenProvider {
     }
 
     public void blacklistToken(String token) {
+        if (redisTemplate == null) {
+            return;
+        }
         long ttl = getExpirationFromToken(token);
         redisTemplate.opsForValue().set("jwt:blacklist:" + token, "1", ttl, TimeUnit.MILLISECONDS);
     }
