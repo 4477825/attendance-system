@@ -85,6 +85,7 @@ CREATE TABLE overtime_record (
     reason VARCHAR(500) COMMENT '加班事由',
     status VARCHAR(20) DEFAULT 'PENDING' COMMENT 'PENDING/APPROVED/REJECTED',
     approver_id BIGINT COMMENT '审批人ID',
+    approve_remark VARCHAR(255) COMMENT '审批意见',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     CONSTRAINT fk_overtime_user FOREIGN KEY (user_id) REFERENCES sys_user(id),
     CONSTRAINT fk_overtime_approver FOREIGN KEY (approver_id) REFERENCES sys_user(id),

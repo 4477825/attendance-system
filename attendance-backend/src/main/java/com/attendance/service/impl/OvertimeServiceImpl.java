@@ -86,6 +86,7 @@ public class OvertimeServiceImpl implements OvertimeService {
 
         record.setStatus(status);
         record.setApproverId(approverId);
+        record.setApproveRemark(approveRemark);
         overtimeRecordMapper.updateById(record);
         return record;
     }

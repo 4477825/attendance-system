@@ -69,23 +69,59 @@
                 <el-tag :type="statusTag(row.status)" size="small">{{ statusLabel(row.status) }}</el-tag>
               </template>
             </el-table-column>
+            <el-table-column label="操作" width="160" align="center" v-if="isAdmin">
+              <template #default="{ row }">
+                <template v-if="row.status === 'PENDING'">
+                  <el-button type="primary" link size="small" @click="openApproveDialog(row, 'APPROVED')">通过</el-button>
+                  <el-button type="danger" link size="small" @click="openApproveDialog(row, 'REJECTED')">拒绝</el-button>
+                </template>
+                <span v-else-if="row.approveRemark" style="color: #909399; font-size: 12px;">
+                  {{ row.approveRemark }}
+                </span>
+              </template>
+            </el-table-column>
           </el-table>
         </el-card>
       </el-col>
     </el-row>
+
+    <el-dialog v-model="approveVisible" :title="approveAction === 'APPROVED' ? '通过加班申请' : '拒绝加班申请'" width="420px">
+      <div style="margin-bottom: 12px; color: #606266;">
+        申请人：{{ approveForm?.userName || '-' }} &nbsp;
+        时长：{{ approveForm?.durationHours }}h
+      </div>
+      <el-form :model="remarkForm" label-width="80px">
+        <el-form-item label="审批意见">
+          <el-input v-model="remarkForm.remark" type="textarea" :rows="3" placeholder="请输入审批意见" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="approveVisible = false">取消</el-button>
+        <el-button type="primary" :loading="approving" @click="submitApprove">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { applyOvertime, getOvertimeList } from '@/api/overtime'
+import { ref, reactive, onMounted, computed } from 'vue'
+import { applyOvertime, getOvertimeList, approveOvertime } from '@/api/overtime'
 import { ElMessage } from 'element-plus'
 import dayjs from 'dayjs'
+import { useUserStore } from '@/store/user'
 
 const formRef = ref(null)
 const submitting = ref(false)
 const overtimes = ref([])
 const loading = ref(false)
+const approving = ref(false)
+const approveVisible = ref(false)
+const approveAction = ref('APPROVED')
+const approveForm = ref(null)
+const remarkForm = reactive({ remark: '' })
+
+const userStore = useUserStore()
+const isAdmin = computed(() => userStore.roles.includes('ADMIN'))
 
 const form = reactive({
   startTime: '',
@@ -150,6 +186,30 @@ const loadOvertimes = async () => {
     // handled
   } finally {
     loading.value = false
+  }
+}
+
+const openApproveDialog = (row, action) => {
+  approveForm.value = row
+  approveAction.value = action
+  remarkForm.remark = ''
+  approveVisible.value = true
+}
+
+const submitApprove = async () => {
+  approving.value = true
+  try {
+    await approveOvertime(approveForm.value.id, {
+      status: approveAction.value,
+      approveRemark: remarkForm.remark,
+    })
+    ElMessage.success('审批成功')
+    approveVisible.value = false
+    loadOvertimes()
+  } catch (e) {
+    // handled
+  } finally {
+    approving.value = false
   }
 }
 

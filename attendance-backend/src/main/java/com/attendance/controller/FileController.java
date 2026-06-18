@@ -44,7 +44,7 @@ public class FileController {
         }
 
         String fileName = UUID.randomUUID().toString().replace("-", "") + extension;
-        File dest = new File(uploadPath + fileName);
+        File dest = new File(uploadPath, fileName);
 
         try {
             file.transferTo(dest);

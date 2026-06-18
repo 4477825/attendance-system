@@ -33,5 +33,7 @@ public class OvertimeRecord implements Serializable {
 
     private Long approverId;
 
+    private String approveRemark;
+
     private LocalDateTime createdAt;
 }

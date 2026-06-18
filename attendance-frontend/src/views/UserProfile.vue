@@ -155,9 +155,9 @@ const handleSave = async () => {
 
 const handleAvatarSuccess = (response) => {
   if (response.code === 200) {
-    const user = userStore.user
-    user.avatarUrl = response.data
-    userStore.user = user
+    userStore.$patch({
+      user: { ...userStore.user, avatarUrl: response.data },
+    })
     ElMessage.success('头像上传成功')
   }
 }
