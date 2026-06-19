@@ -5,16 +5,16 @@
         <el-card shadow="never">
           <template #header><span>头像</span></template>
           <div class="avatar-section">
-            <el-avatar :size="100" :src="userStore.user?.avatarUrl || undefined">
+            <el-avatar :size="100" :src="avatarSrc" @error="handleAvatarError">
               {{ userStore.user?.realName?.charAt(0) || 'U' }}
             </el-avatar>
             <div style="margin-top: 16px">
               <el-upload
-                action="/api/upload/file"
-                :headers="{ Authorization: 'Bearer ' + token }"
+                :action="'/api/upload/file'"
+                :headers="uploadHeaders"
                 :show-file-list="false"
-                :on-success="handleAvatarSuccess"
                 :before-upload="beforeUpload"
+                :http-request="handleUpload"
                 accept="image/*"
               >
                 <el-button type="primary" size="small">
@@ -79,12 +79,13 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useUserStore } from '@/store/user'
 import { updateProfile } from '@/api/auth'
 import { getToken } from '@/utils/auth'
 import { ElMessage } from 'element-plus'
 import { Upload } from '@element-plus/icons-vue'
+import request from '@/api/request'
 
 const userStore = useUserStore()
 const token = getToken()
@@ -92,6 +93,7 @@ const formRef = ref(null)
 const pwdRef = ref(null)
 const saving = ref(false)
 const changingPwd = ref(false)
+const avatarSrc = ref('')
 
 const form = reactive({
   realName: '',
@@ -105,6 +107,10 @@ const passwordForm = reactive({
   newPassword: '',
   confirmPassword: '',
 })
+
+const uploadHeaders = computed(() => ({
+  Authorization: 'Bearer ' + token,
+}))
 
 const validateConfirm = (rule, value, callback) => {
   if (value !== passwordForm.newPassword) {
@@ -132,6 +138,10 @@ const loadProfile = () => {
     form.email = userStore.user.email || ''
     form.phone = userStore.user.phone || ''
     form.role = userStore.user.role || ''
+    // 如果有头像URL，设置到 avatarSrc
+    if (userStore.user.avatarUrl) {
+      avatarSrc.value = userStore.user.avatarUrl
+    }
   }
 }
 
@@ -143,6 +153,7 @@ const handleSave = async () => {
       realName: form.realName,
       email: form.email,
       phone: form.phone,
+      avatarUrl: userStore.user?.avatarUrl,
     })
     ElMessage.success('保存成功')
     loadProfile()
@@ -153,12 +164,29 @@ const handleSave = async () => {
   }
 }
 
-const handleAvatarSuccess = (response) => {
-  if (response.code === 200) {
-    userStore.$patch({
-      user: { ...userStore.user, avatarUrl: response.data },
+// 自定义上传逻辑，确保 header 和响应正确处理
+const handleUpload = async (options) => {
+  const { file, onSuccess, onError } = options
+  const formData = new FormData()
+  formData.append('file', file)
+
+  try {
+    const res = await request.post('/api/upload/file', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
     })
-    ElMessage.success('头像上传成功')
+    if (res.code === 200) {
+      // 更新 store 和数据库
+      const avatarUrl = res.data
+      userStore.$patch({
+        user: { ...userStore.user, avatarUrl: avatarUrl },
+      })
+      avatarSrc.value = avatarUrl
+      ElMessage.success('头像上传成功')
+    } else {
+      onError(new Error(res.message))
+    }
+  } catch (err) {
+    onError(err)
   }
 }
 
@@ -174,6 +202,10 @@ const beforeUpload = (file) => {
     return false
   }
   return true
+}
+
+const handleAvatarError = () => {
+  avatarSrc.value = ''
 }
 
 const handleChangePassword = async () => {

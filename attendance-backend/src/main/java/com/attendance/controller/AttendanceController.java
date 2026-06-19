@@ -47,7 +47,7 @@ public class AttendanceController {
     public Result<Void> checkOut(@RequestHeader("Authorization") String authHeader) {
         Long userId = extractUserId(authHeader);
         attendanceService.checkOut(userId);
-        return Result.success("签退成功");
+        return Result.successMessage("签退成功");
     }
 
     @GetMapping("/records")

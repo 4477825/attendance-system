@@ -12,6 +12,8 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.UUID;
 
 @RestController
@@ -22,11 +24,13 @@ public class FileController {
     @Value("${upload.path}")
     private String uploadPath;
 
+    private Path resolvedUploadPath;
+
     @PostConstruct
     public void init() {
-        File dir = new File(uploadPath);
-        if (!dir.exists()) {
-            dir.mkdirs();
+        resolvedUploadPath = Paths.get(uploadPath).toAbsolutePath().normalize();
+        if (!resolvedUploadPath.toFile().exists()) {
+            resolvedUploadPath.toFile().mkdirs();
         }
     }
 
@@ -44,7 +48,7 @@ public class FileController {
         }
 
         String fileName = UUID.randomUUID().toString().replace("-", "") + extension;
-        File dest = new File(uploadPath, fileName);
+        File dest = resolvedUploadPath.resolve(fileName).toFile();
 
         try {
             file.transferTo(dest);

@@ -41,7 +41,7 @@ public class UserController {
         User existing = userService.getUserByUsername(username);
         user.setId(existing.getId());
         userService.updateProfile(user);
-        return Result.success("更新成功");
+        return Result.successMessage("更新成功");
     }
 
     @PostMapping("/logout")
@@ -51,7 +51,7 @@ public class UserController {
             String token = authHeader.substring(7);
             jwtTokenProvider.blacklistToken(token);
         }
-        return Result.success("登出成功");
+        return Result.successMessage("登出成功");
     }
 
     @GetMapping

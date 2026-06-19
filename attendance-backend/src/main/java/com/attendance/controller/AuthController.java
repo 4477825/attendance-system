@@ -28,7 +28,7 @@ public class AuthController {
     @Operation(summary = "用户注册")
     public Result<Void> register(@Valid @RequestBody User user) {
         userService.register(user);
-        return Result.success("注册成功");
+        return Result.successMessage("注册成功");
     }
 
     @PostMapping("/login")

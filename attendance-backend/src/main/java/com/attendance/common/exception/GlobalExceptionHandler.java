@@ -4,6 +4,7 @@ import com.attendance.common.ErrorCode;
 import com.attendance.common.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.BindException;
@@ -56,6 +57,14 @@ public class GlobalExceptionHandler {
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining(", "));
         log.warn("参数绑定失败: {}", msg);
+        return Result.error(ErrorCode.BAD_REQUEST, msg);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public Result<Void> handleMessageNotReadable(HttpMessageNotReadableException e) {
+        String rootMsg = e.getRootCause() != null ? e.getRootCause().getMessage() : "unknown";
+        log.warn("请求参数解析失败: {}", rootMsg);
+        String msg = "请求参数解析失败: " + (rootMsg.contains("Invalid UTF-8") ? "请求体编码错误" : rootMsg);
         return Result.error(ErrorCode.BAD_REQUEST, msg);
     }
 

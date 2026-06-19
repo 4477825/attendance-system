@@ -31,6 +31,17 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * Configure UTF-8 encoding filter for the Security filter chain.
+     * Must be inside the Security chain so Tomcat reads the body with correct encoding.
+     */
+    private org.springframework.web.filter.CharacterEncodingFilter configureUtf8EncodingFilter() {
+        org.springframework.web.filter.CharacterEncodingFilter filter = new org.springframework.web.filter.CharacterEncodingFilter();
+        filter.setEncoding("UTF-8");
+        filter.setForceEncoding(true);
+        return filter;
+    }
+
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
@@ -51,6 +62,7 @@ public class SecurityConfig {
             .and()
             .headers().frameOptions().disable()
             .and()
+            .addFilterBefore(configureUtf8EncodingFilter(), org.springframework.security.web.context.SecurityContextPersistenceFilter.class)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

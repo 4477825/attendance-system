@@ -37,14 +37,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (token != null && jwtTokenProvider.validateToken(token)) {
                 Long userId = jwtTokenProvider.getUserIdFromToken(token);
                 UserDetails userDetails = userDetailsService.loadUserById(userId);
+                Long finalUserId = userId;
                 org.springframework.security.authentication.AbstractAuthenticationToken authentication = new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
+                        String.valueOf(finalUserId), null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (BusinessException e) {
-            // Token is invalid or expired, continue without authentication
-            log.debug("JWT validation failed: {}", e.getMessage());
+            log.warn("JWT validation failed (business): {}", e.getMessage());
+            throw e;
+        } catch (UsernameNotFoundException e) {
+            log.warn("JWT validation failed (user not found): {}", e.getMessage());
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND, e.getMessage());
+        } catch (IllegalArgumentException e) {
+            log.warn("JWT validation failed (invalid token): {}", e.getMessage());
+            throw new BusinessException(ErrorCode.TOKEN_INVALID, "Token invalid");
+        } catch (Exception e) {
+            log.warn("JWT validation failed: {}", e.getMessage());
+            log.debug("Unexpected JWT validation error: {}", e.getMessage());
         }
         filterChain.doFilter(request, response);
     }

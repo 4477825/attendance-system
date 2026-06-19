@@ -28,7 +28,7 @@ public class Result<T> implements Serializable {
         return result;
     }
 
-    public static <T> Result<T> success(String message) {
+    public static <T> Result<T> successMessage(String message) {
         Result<T> result = new Result<>();
         result.setCode(200);
         result.setMessage(message);
