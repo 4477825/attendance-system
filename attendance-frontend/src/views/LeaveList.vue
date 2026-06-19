@@ -26,7 +26,7 @@
         <el-table-column prop="reason" label="事由" min-width="200" show-overflow-tooltip />
         <el-table-column label="附件" width="80" align="center">
           <template #default="{ row }">
-            <a v-if="row.attachmentUrl" :href="row.attachmentUrl" target="_blank" rel="noopener" title="点击查看/下载附件">
+            <a v-if="row.attachmentUrl" :href="getAttachmentUrl(row.attachmentUrl)" target="_blank" rel="noopener" title="点击查看/下载附件">
               <el-icon :size="18" style="color: #409EFF"><Document /></el-icon>
             </a>
             <span v-else style="color: #C0C4CC">-</span>
@@ -87,6 +87,9 @@ import { getLeaveList, approveLeave } from '@/api/leave'
 import { getToken, isAdmin } from '@/utils/auth'
 import { ElMessage } from 'element-plus'
 import { Document } from '@element-plus/icons-vue'
+
+// Backend API base URL for direct file access
+const BACKEND_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081'
 import dayjs from 'dayjs'
 
 const leaves = ref([])
@@ -115,6 +118,14 @@ const statusTag = (status) => {
 }
 
 const formatTime = (time) => dayjs(time).format('YYYY-MM-DD HH:mm')
+
+const getAttachmentUrl = (url) => {
+  if (!url) return ''
+  // If already a full URL, return as-is
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
+  // Otherwise prepend backend base URL
+  return BACKEND_BASE_URL + url
+}
 
 const loadList = async () => {
   loading.value = true
