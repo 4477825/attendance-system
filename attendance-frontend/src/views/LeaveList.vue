@@ -24,6 +24,14 @@
           <template #default="{ row }">{{ formatTime(row.endTime) }}</template>
         </el-table-column>
         <el-table-column prop="reason" label="事由" min-width="200" show-overflow-tooltip />
+        <el-table-column label="附件" width="80" align="center">
+          <template #default="{ row }">
+            <a v-if="row.attachmentUrl" :href="row.attachmentUrl" target="_blank" rel="noopener" title="点击查看/下载附件">
+              <el-icon :size="18" style="color: #409EFF"><Document /></el-icon>
+            </a>
+            <span v-else style="color: #C0C4CC">-</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="status" label="状态" width="100">
           <template #default="{ row }">
             <el-tag :type="statusTag(row.status)" size="small">{{ statusLabel(row.status) }}</el-tag>
@@ -77,7 +85,8 @@
 import { ref, onMounted } from 'vue'
 import { getLeaveList, approveLeave } from '@/api/leave'
 import { getToken, isAdmin } from '@/utils/auth'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
+import { Document } from '@element-plus/icons-vue'
 import dayjs from 'dayjs'
 
 const leaves = ref([])
