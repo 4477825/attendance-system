@@ -17,4 +17,6 @@ public interface OvertimeService {
     OvertimeRecord approveOvertime(Long id, Long approverId, String approveRemark, String status);
 
     List<OvertimeRecord> getUserOvertimes(Long userId);
+
+    void deleteOvertime(Long id, Long userId);
 }

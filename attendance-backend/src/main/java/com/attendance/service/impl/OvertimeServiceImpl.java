@@ -87,6 +87,7 @@ public class OvertimeServiceImpl implements OvertimeService {
         record.setStatus(status);
         record.setApproverId(approverId);
         record.setApproveRemark(approveRemark);
+        record.setApproveTime(LocalDateTime.now());
         overtimeRecordMapper.updateById(record);
         return record;
     }
@@ -97,5 +98,17 @@ public class OvertimeServiceImpl implements OvertimeService {
         wrapper.eq(OvertimeRecord::getUserId, userId)
                 .orderByDesc(OvertimeRecord::getCreatedAt);
         return overtimeRecordMapper.selectList(wrapper);
+    }
+
+    @Override
+    public void deleteOvertime(Long id, Long userId) {
+        OvertimeRecord record = overtimeRecordMapper.selectById(id);
+        if (record == null) {
+            throw new BusinessException(ErrorCode.OVERTIME_NOT_FOUND, "加班记录不存在");
+        }
+        if (!record.getUserId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN, "无权限删除此加班记录");
+        }
+        overtimeRecordMapper.deleteById(id);
     }
 }

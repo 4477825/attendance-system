@@ -44,10 +44,28 @@ const routes = [
         meta: { title: '请假列表' },
       },
       {
+        path: 'leave/detail/:id',
+        name: 'LeaveDetail',
+        component: () => import('@/views/LeaveDetail.vue'),
+        meta: { title: '请假详情' },
+      },
+      {
         path: 'overtime',
         name: 'Overtime',
         component: () => import('@/views/Overtime.vue'),
         meta: { title: '加班登记' },
+      },
+      {
+        path: 'overtime/detail/:id',
+        name: 'OvertimeDetail',
+        component: () => import('@/views/OvertimeDetail.vue'),
+        meta: { title: '加班详情' },
+      }
+      {
+        path: 'overtime/approval',
+        name: 'OvertimeApproval',
+        component: () => import('@/views/OvertimeApproval.vue'),
+        meta: { title: '加班审批', adminOnly: true },
       },
       {
         path: 'statistics',
@@ -60,6 +78,18 @@ const routes = [
         name: 'Profile',
         component: () => import('@/views/UserProfile.vue'),
         meta: { title: '个人中心' },
+      },
+      {
+        path: 'departments',
+        name: 'DepartmentManagement',
+        component: () => import('@/views/DepartmentManagement.vue'),
+        meta: { title: '部门管理', adminOnly: true },
+      },
+      {
+        path: 'users',
+        name: 'UserManagement',
+        component: () => import('@/views/UserManagement.vue'),
+        meta: { title: '用户管理', adminOnly: true },
       },
     ],
   },

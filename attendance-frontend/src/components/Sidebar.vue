@@ -38,10 +38,24 @@
         <span>加班登记</span>
       </el-menu-item>
 
+      <el-menu-item v-if="isAdmin" index="/overtime/approval">
+        <el-icon><Checked /></el-icon>
+        <span>加班审批</span>
+      </el-menu-item>
+
       <el-menu-item v-if="isAdmin" index="/statistics">
         <el-icon><TrendCharts /></el-icon>
         <span>统计报表</span>
       </el-menu-item>
+
+      <el-sub-menu v-if="isAdmin" index="admin">
+        <template #title>
+          <el-icon><Setting /></el-icon>
+          <span>系统管理</span>
+        </template>
+        <el-menu-item index="/departments">部门管理</el-menu-item>
+        <el-menu-item index="/users">用户管理</el-menu-item>
+      </el-sub-menu>
 
       <el-menu-item index="/profile">
         <el-icon><User /></el-icon>
@@ -55,6 +69,7 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { isAdmin } from '@/utils/auth'
+import { OfficeBuilding, DataBoard, Calendar, Document, Timer, TrendCharts, Setting, User, Checked } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const activeMenu = computed(() => route.path)
