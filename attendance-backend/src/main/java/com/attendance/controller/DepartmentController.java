@@ -2,12 +2,11 @@ package com.attendance.controller;
 
 import com.attendance.common.Result;
 import com.attendance.entity.Department;
-import com.attendance.mapper.DepartmentMapper;
+import com.attendance.service.DepartmentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -16,16 +15,37 @@ import java.util.List;
 @Tag(name = "部门接口", description = "部门管理相关接口")
 public class DepartmentController {
 
-    private final DepartmentMapper departmentMapper;
+    private final DepartmentService departmentService;
 
-    public DepartmentController(DepartmentMapper departmentMapper) {
-        this.departmentMapper = departmentMapper;
+    public DepartmentController(DepartmentService departmentService) {
+        this.departmentService = departmentService;
     }
 
     @GetMapping
     @Operation(summary = "获取部门列表")
     public Result<List<Department>> listDepartments() {
-        List<Department> departments = departmentMapper.selectList(null);
-        return Result.success(departments);
+        return Result.success(departmentService.listDepartments());
+    }
+
+    @PostMapping
+    @Operation(summary = "新增部门")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Result<Department> createDepartment(@RequestBody Department department) {
+        return Result.success(departmentService.createDepartment(department));
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "更新部门")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Result<Department> updateDepartment(@PathVariable Long id, @RequestBody Department department) {
+        return Result.success(departmentService.updateDepartment(id, department));
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "删除部门")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Result<Void> deleteDepartment(@PathVariable Long id) {
+        departmentService.deleteDepartment(id);
+        return Result.successMessage("删除成功");
     }
 }

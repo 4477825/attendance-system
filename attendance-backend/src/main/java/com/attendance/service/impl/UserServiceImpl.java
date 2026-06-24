@@ -103,6 +103,67 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> getAllUsers() {
-        return userMapper.selectList(null);
+        List<User> users = userMapper.selectList(null);
+        for (User user : users) {
+            if (user.getDepartmentId() != null) {
+                Department dept = departmentMapper.selectById(user.getDepartmentId());
+                if (dept != null) {
+                    user.setDepartmentName(dept.getName());
+                }
+            }
+        }
+        return users;
+    }
+
+    @Override
+    public User createUser(User user) {
+        if (userMapper.findByUsername(user.getUsername()) != null) {
+            throw new BusinessException(ErrorCode.USERNAME_EXISTS, "用户名已存在");
+        }
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        if (user.getRole() == null || user.getRole().isEmpty()) {
+            user.setRole("ROLE_EMPLOYEE");
+        }
+        if (user.getStatus() == null) {
+            user.setStatus(1);
+        }
+        userMapper.insert(user);
+        return user;
+    }
+
+    @Override
+    public void updateUser(Long id, User user) {
+        User existing = userMapper.selectById(id);
+        if (existing == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND, "用户不存在");
+        }
+        if (user.getRealName() != null) existing.setRealName(user.getRealName());
+        if (user.getEmail() != null) existing.setEmail(user.getEmail());
+        if (user.getPhone() != null) existing.setPhone(user.getPhone());
+        if (user.getDepartmentId() != null) existing.setDepartmentId(user.getDepartmentId());
+        if (user.getRole() != null) existing.setRole(user.getRole());
+        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+            existing.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
+        userMapper.updateById(existing);
+    }
+
+    @Override
+    public void deleteUser(Long id) {
+        User existing = userMapper.selectById(id);
+        if (existing == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND, "用户不存在");
+        }
+        userMapper.deleteById(id);
+    }
+
+    @Override
+    public void toggleUserStatus(Long id) {
+        User existing = userMapper.selectById(id);
+        if (existing == null) {
+            throw new BusinessException(ErrorCode.USER_NOT_FOUND, "用户不存在");
+        }
+        existing.setStatus(existing.getStatus() == 1 ? 0 : 1);
+        userMapper.updateById(existing);
     }
 }

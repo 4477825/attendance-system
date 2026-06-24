@@ -60,4 +60,35 @@ public class UserController {
     public Result<java.util.List<User>> listUsers() {
         return Result.success(userService.getAllUsers());
     }
+
+    @PostMapping
+    @Operation(summary = "新增用户（管理员）")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Result<User> createUser(@RequestBody User user) {
+        return Result.success(userService.createUser(user));
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "更新用户信息（管理员）")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Result<Void> updateUser(@PathVariable Long id, @RequestBody User user) {
+        userService.updateUser(id, user);
+        return Result.successMessage("更新成功");
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "删除用户（管理员）")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Result<Void> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return Result.successMessage("删除成功");
+    }
+
+    @PutMapping("/{id}/status")
+    @Operation(summary = "启用/禁用用户")
+    @PreAuthorize("hasRole('ADMIN')")
+    public Result<Void> toggleUserStatus(@PathVariable Long id) {
+        userService.toggleUserStatus(id);
+        return Result.successMessage("操作成功");
+    }
 }

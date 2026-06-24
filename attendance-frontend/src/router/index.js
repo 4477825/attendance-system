@@ -44,12 +44,6 @@ const routes = [
         meta: { title: '请假列表' },
       },
       {
-        path: 'leave/detail/:id',
-        name: 'LeaveDetail',
-        component: () => import('@/views/LeaveDetail.vue'),
-        meta: { title: '请假详情' },
-      },
-      {
         path: 'overtime',
         name: 'Overtime',
         component: () => import('@/views/Overtime.vue'),
@@ -60,7 +54,7 @@ const routes = [
         name: 'OvertimeDetail',
         component: () => import('@/views/OvertimeDetail.vue'),
         meta: { title: '加班详情' },
-      }
+      },
       {
         path: 'overtime/approval',
         name: 'OvertimeApproval',

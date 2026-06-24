@@ -49,7 +49,10 @@
       <el-col :xs="24" :lg="14">
         <el-card shadow="never">
           <template #header>
-            <span>我的加班记录</span>
+            <span style="line-height: 32px;">我的加班记录</span>
+            <el-button v-if="isAdmin" type="success" plain size="small" style="float: right;" @click="handleExport" :loading="exporting">
+              导出Excel
+            </el-button>
           </template>
           <el-table :data="overtimes" stripe v-loading="loading" style="width: 100%">
             <el-table-column prop="overtimeDate" label="日期" width="120">
@@ -105,7 +108,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
-import { applyOvertime, getOvertimeList, approveOvertime } from '@/api/overtime'
+import { applyOvertime, getOvertimeList, approveOvertime, exportOvertime } from '@/api/overtime'
 import { ElMessage } from 'element-plus'
 import dayjs from 'dayjs'
 import { useUserStore } from '@/store/user'
@@ -119,6 +122,7 @@ const approveVisible = ref(false)
 const approveAction = ref('APPROVED')
 const approveForm = ref(null)
 const remarkForm = reactive({ remark: '' })
+const exporting = ref(false)
 
 const userStore = useUserStore()
 const isAdmin = computed(() => userStore.roles.includes('ADMIN'))
@@ -210,6 +214,24 @@ const submitApprove = async () => {
     // handled
   } finally {
     approving.value = false
+  }
+}
+
+const handleExport = async () => {
+  exporting.value = true
+  try {
+    const res = await exportOvertime()
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = '加班记录.xlsx'
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch (e) {
+    ElMessage.error('导出失败')
+  } finally {
+    exporting.value = false
   }
 }
 

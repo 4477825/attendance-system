@@ -11,6 +11,9 @@
           <el-option label="已通过" value="APPROVED" />
           <el-option label="已拒绝" value="REJECTED" />
         </el-select>
+        <el-button v-if="isAdmin()" type="success" plain @click="handleExport" :loading="exporting">
+          导出Excel
+        </el-button>
       </div>
 
       <el-table :data="leaves" stripe v-loading="loading" style="width: 100%; margin-top: 16px">
@@ -83,7 +86,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getLeaveList, approveLeave } from '@/api/leave'
+import { getLeaveList, approveLeave, exportLeave } from '@/api/leave'
 import { getToken, isAdmin } from '@/utils/auth'
 import { ElMessage } from 'element-plus'
 import { Document } from '@element-plus/icons-vue'
@@ -101,6 +104,7 @@ const statusFilter = ref('')
 const dialogVisible = ref(false)
 const approving = ref(false)
 const currentLeaveId = ref(null)
+const exporting = ref(false)
 
 const approveForm = ref({
   status: 'APPROVED',
@@ -173,6 +177,24 @@ const doApprove = async () => {
 
 const handleDelete = (row) => {
   ElMessage.info('删除功能开发中')
+}
+
+const handleExport = async () => {
+  exporting.value = true
+  try {
+    const res = await exportLeave()
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = '请假记录.xlsx'
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch (e) {
+    ElMessage.error('导出失败')
+  } finally {
+    exporting.value = false
+  }
 }
 
 onMounted(() => {

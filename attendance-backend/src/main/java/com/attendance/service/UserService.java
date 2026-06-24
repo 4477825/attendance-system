@@ -19,4 +19,12 @@ public interface UserService {
     User getUserProfile(Long userId);
 
     java.util.List<User> getAllUsers();
+
+    User createUser(User user);
+
+    void updateUser(Long id, User user);
+
+    void deleteUser(Long id);
+
+    void toggleUserStatus(Long id);
 }
